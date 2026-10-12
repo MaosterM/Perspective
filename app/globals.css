@@ -1,0 +1,1233 @@
+@import "tailwindcss";
+
+/* ==========================================================================
+   Design tokens. Documented in DESIGN.md. Single source of truth for colour,
+   type, spacing and motion; Tailwind utilities below read from these.
+   ========================================================================== */
+:root {
+  /* Colour */
+  --bg: #03050b;
+  --bg-2: #070b16;
+  --surface: #0b1120;
+  --ink: #f5f3ef;
+  --ink-2: #a6afc0;
+  --sky: #91caff;
+  --deep: #0d1b36;
+  --crimson: #d64050; /* graphics and large display only (4.57:1 on --bg) */
+  --crimson-strong: #c0303f; /* button fill, white text 5.62:1 */
+  --crimson-text: #f0606f; /* small crimson text (6.41:1 on --bg) */
+  --line: #1a2236; /* decorative hairlines */
+  --line-strong: #506089; /* control outlines (3.28:1 on --bg, 3.03:1 on --surface) */
+
+  /* Fluid type scale */
+  --fs-label: clamp(0.7rem, 0.68rem + 0.1vw, 0.78rem);
+  --fs-small: clamp(0.875rem, 0.85rem + 0.12vw, 0.95rem);
+  --fs-body: clamp(1rem, 0.96rem + 0.2vw, 1.125rem);
+  --fs-lead: clamp(1.15rem, 1.02rem + 0.55vw, 1.45rem);
+  --fs-h3: clamp(1.5rem, 1.15rem + 1.6vw, 2.5rem);
+  --fs-h2: clamp(2.6rem, 1.5rem + 5.2vw, 6.25rem);
+  --fs-hero: clamp(3.5rem, 1.1rem + 11.5vw, 12rem);
+
+  /* Spacing (4px base) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+  --space-24: 6rem;
+  --gutter: clamp(1rem, 4vw, 3rem);
+  --section-pad: clamp(5rem, 12vw, 10rem);
+
+  /* Radii: sharp by default, echoing the editorial/diagonal language */
+  --radius-0: 0;
+  --radius-1: 2px;
+  --radius-2: 6px;
+  --radius-pill: 999px;
+
+  /* Motion */
+  --dur-micro: 180ms;
+  --dur-std: 350ms;
+  --dur-reveal: 650ms;
+  --stagger: 70ms;
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+
+  --shadow-lift: 0 24px 60px -24px rgb(0 0 0 / 0.7);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg2: var(--bg-2);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-mute: var(--ink-2);
+  --color-sky: var(--sky);
+  --color-deep: var(--deep);
+  --color-crimson: var(--crimson);
+  --color-crimson-strong: var(--crimson-strong);
+  --color-crimson-text: var(--crimson-text);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+
+  --font-display: var(--font-anton), "Impact", "Arial Narrow", sans-serif;
+  --font-serif: var(--font-instrument), "Georgia", serif;
+  --font-sans: var(--font-manrope), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+
+/* Everything below sits in the components layer so Tailwind utilities (a later layer)
+   always win over these classes when both are applied to one element. */
+@layer components {
+/* ==========================================================================
+   Base
+   ========================================================================== */
+html {
+  background: var(--bg);
+  color-scheme: dark;
+  scroll-behavior: smooth;
+  scroll-padding-top: 6rem;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  background: transparent;
+  color: var(--ink);
+  font-family: var(--font-sans);
+  font-size: var(--fs-body);
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+main {
+  overflow-x: clip;
+}
+
+::selection {
+  background: var(--crimson-strong);
+  color: #fff;
+}
+
+:focus-visible {
+  outline: 2px solid var(--sky);
+  outline-offset: 3px;
+}
+
+.skip-link {
+  position: fixed;
+  left: 1rem;
+  top: -4rem;
+  z-index: 200;
+  padding: 0.75rem 1rem;
+  background: var(--ink);
+  color: var(--bg);
+  font-weight: 700;
+  transition: top var(--dur-micro) var(--ease-out);
+}
+.skip-link:focus {
+  top: 1rem;
+}
+
+.wrap {
+  width: 100%;
+  max-width: 90rem;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.section {
+  position: relative;
+  isolation: isolate;
+  padding-block: var(--section-pad);
+}
+
+/* Slanted top edge: only the backdrop is cut, content is never clipped. */
+.slash-top::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--bg-2) 82%, transparent), color-mix(in srgb, var(--bg-2) 55%, transparent));
+  clip-path: polygon(0 clamp(1.5rem, 5vw, 5rem), 100% 0, 100% 100%, 0 100%);
+}
+
+/* ==========================================================================
+   Typography
+   ========================================================================== */
+.t-label {
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+
+.t-display {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: -0.005em;
+  line-height: 0.88;
+}
+
+.t-em {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+  text-transform: none;
+  letter-spacing: -0.01em;
+  color: var(--sky);
+}
+
+.t-h2 {
+  font-size: var(--fs-h2);
+}
+
+.t-h3 {
+  font-family: var(--font-display);
+  font-size: var(--fs-h3);
+  text-transform: uppercase;
+  line-height: 0.98;
+}
+
+.t-lead {
+  font-size: var(--fs-lead);
+  line-height: 1.5;
+  color: var(--ink);
+}
+
+.prose-measure {
+  max-width: 62ch;
+}
+
+.num-outline {
+  font-family: var(--font-display);
+  color: transparent;
+  -webkit-text-stroke: 1px rgb(145 202 255 / 0.3);
+  line-height: 0.8;
+  user-select: none;
+}
+
+/* Marked placeholder content */
+.ph {
+  display: block;
+  padding: 0.55rem 0.8rem;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius-1);
+  color: var(--ink-2);
+  font-style: italic;
+  font-size: var(--fs-small);
+  line-height: 1.5;
+}
+
+/* Underline that draws in on hover/focus */
+.u-link {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  background-size: 0 1px;
+  transition: background-size var(--dur-std) var(--ease-out);
+}
+.u-link:hover,
+.u-link:focus-visible {
+  background-size: 100% 1px;
+}
+
+/* ==========================================================================
+   Buttons and tags
+   ========================================================================== */
+.btn {
+  position: relative;
+  isolation: isolate;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  min-height: 2.75rem;
+  padding: 0.7rem 1.5rem;
+  font-family: var(--font-sans);
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #fff;
+  text-decoration: none;
+  cursor: pointer;
+  background: none;
+  border: 0;
+}
+.btn::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  transform: skewX(-12deg);
+  transition: transform var(--dur-std) var(--ease-out), background-color var(--dur-micro), border-color var(--dur-micro);
+}
+.btn svg {
+  transition: transform var(--dur-std) var(--ease-out);
+}
+.btn:hover svg,
+.btn:focus-visible svg {
+  transform: translate(2px, -2px);
+}
+.btn-primary::before {
+  background: var(--crimson-strong);
+}
+.btn-primary:hover::before,
+.btn-primary:focus-visible::before {
+  transform: skewX(-12deg) scale(1.05);
+}
+.btn-ghost {
+  color: var(--ink);
+}
+.btn-ghost::before {
+  border: 1px solid var(--line-strong);
+}
+.btn-ghost:hover::before,
+.btn-ghost:focus-visible::before {
+  border-color: var(--sky);
+  transform: skewX(-12deg) scale(1.03);
+}
+
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-2);
+}
+.tag::before {
+  content: "";
+  width: 1.25rem;
+  height: 2px;
+  background: var(--crimson);
+  transform: skewX(-30deg);
+}
+
+.chip {
+  min-height: 2.5rem;
+  padding: 0.45rem 0.95rem;
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  color: var(--ink-2);
+  font-family: var(--font-mono);
+  font-size: var(--fs-label);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: color var(--dur-micro), border-color var(--dur-micro), background-color var(--dur-micro);
+}
+.chip:hover {
+  color: var(--ink);
+  border-color: var(--sky);
+}
+.chip[aria-pressed="true"] {
+  color: #fff;
+  background: var(--crimson-strong);
+  border-color: var(--crimson-strong);
+}
+
+/* ==========================================================================
+   Reveal system.
+   Content is visible by default. Hiding only applies when the inline head
+   script has added .js (motion allowed). `.reveal-all` is the failsafe.
+   ========================================================================== */
+.js [data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 22px, 0);
+  transition: opacity var(--dur-reveal) var(--ease-out), transform var(--dur-reveal) var(--ease-out);
+  transition-delay: var(--d, 0ms);
+}
+.js [data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+}
+.js [data-reveal="fade"] {
+  transform: none;
+}
+.js [data-reveal="mask"] {
+  opacity: 1;
+  transform: none;
+  clip-path: polygon(0 0, 0 0, -10% 100%, 0 100%);
+  transition: clip-path 900ms var(--ease-out);
+  transition-delay: var(--d, 0ms);
+}
+.js [data-reveal="mask"].is-in {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+}
+.js [data-reveal="words"] {
+  opacity: 1;
+  transform: none;
+}
+
+/* Word-level mask reveal (headings). Text stays real, selectable text. */
+.w {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: top;
+  padding-bottom: 0.14em;
+  margin-bottom: -0.14em;
+}
+.w-i {
+  display: inline-block;
+}
+.js [data-reveal="words"] .w-i {
+  transform: translate3d(0, 112%, 0);
+  transition: transform 750ms var(--ease-out);
+  transition-delay: calc(var(--i, 0) * 60ms + var(--d, 0ms));
+}
+.js [data-reveal="words"].is-in .w-i {
+  transform: none;
+}
+
+/* Hero entrance is released by the intro (html.hero-in) */
+.js .hero-item {
+  opacity: 0;
+  transform: translate3d(0, 26px, 0);
+}
+.js.hero-in .hero-item {
+  opacity: 1;
+  transform: none;
+  transition: opacity 800ms var(--ease-out), transform 800ms var(--ease-out);
+  transition-delay: calc(var(--i, 0) * 90ms);
+}
+.js .hero-words .w-i {
+  transform: translate3d(0, 112%, 0);
+}
+.js.hero-in .hero-words .w-i {
+  transform: none;
+  transition: transform 900ms var(--ease-out);
+  transition-delay: calc(var(--i, 0) * 80ms + 100ms);
+}
+.js .hero-bar {
+  transform: scaleX(0) skewX(-30deg);
+}
+.js.hero-in .hero-bar {
+  transform: scaleX(1) skewX(-30deg);
+  transition: transform 900ms var(--ease-in-out) 650ms;
+}
+
+/* Failsafe: if client motion never takes over, show everything. */
+.reveal-all [data-reveal],
+.reveal-all .hero-item,
+.reveal-all .hero-bar {
+  opacity: 1 !important;
+  transform: none !important;
+  clip-path: none !important;
+}
+.reveal-all .w-i {
+  transform: none !important;
+}
+.reveal-all .hero-bar {
+  transform: skewX(-30deg) !important;
+}
+.reveal-all .intro {
+  display: none !important;
+}
+
+/* ==========================================================================
+   Atmosphere: global animated background (transform-only animation)
+   ========================================================================== */
+.atmos {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+  background:
+    radial-gradient(120% 80% at 50% 0%, color-mix(in srgb, var(--deep) 55%, var(--bg)) 0%, transparent 60%),
+    var(--bg);
+}
+.atmos-blob {
+  position: absolute;
+  border-radius: 50%;
+  will-change: transform;
+  transition: opacity 1400ms var(--ease-in-out);
+}
+.atmos-a {
+  width: 80vmax;
+  height: 80vmax;
+  left: -25vmax;
+  top: -35vmax;
+  background: radial-gradient(closest-side, rgb(145 202 255 / 0.13), transparent 72%);
+  animation: drift-a 42s ease-in-out infinite alternate;
+  opacity: 1;
+}
+.atmos-b {
+  width: 90vmax;
+  height: 90vmax;
+  right: -40vmax;
+  bottom: -45vmax;
+  background: radial-gradient(closest-side, color-mix(in srgb, var(--deep) 80%, transparent), transparent 72%);
+  animation: drift-b 55s ease-in-out infinite alternate;
+  opacity: 0.9;
+}
+.atmos-c {
+  width: 55vmax;
+  height: 55vmax;
+  right: -15vmax;
+  top: 10vh;
+  background: radial-gradient(closest-side, rgb(214 64 80 / 0.22), transparent 70%);
+  animation: drift-c 48s ease-in-out infinite alternate;
+  opacity: 0;
+}
+:root[data-atmos="crimson"] .atmos-c {
+  opacity: 1;
+}
+:root[data-atmos="crimson"] .atmos-a {
+  opacity: 0.55;
+}
+:root[data-atmos="deep"] .atmos-b {
+  opacity: 1;
+}
+:root[data-atmos="deep"] .atmos-a {
+  opacity: 0.6;
+}
+
+/* Slowly drifting coordinate grid: translates by exactly one cell, so the loop is seamless */
+.atmos-grid {
+  --cell: 7rem;
+  position: absolute;
+  inset: calc(var(--cell) * -1);
+  background-image:
+    linear-gradient(to right, rgb(145 202 255 / 0.06) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(145 202 255 / 0.06) 1px, transparent 1px);
+  background-size: var(--cell) var(--cell);
+  -webkit-mask-image: radial-gradient(ellipse at 50% 35%, #000 0%, transparent 75%);
+  mask-image: radial-gradient(ellipse at 50% 35%, #000 0%, transparent 75%);
+  animation: grid-drift 80s linear infinite;
+  will-change: transform;
+}
+
+.atmos-grain {
+  position: absolute;
+  inset: 0;
+  opacity: 0.07;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.6 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+@keyframes drift-a {
+  from { transform: translate3d(0, 0, 0) scale(1); }
+  to { transform: translate3d(14vmax, 10vmax, 0) scale(1.1); }
+}
+@keyframes drift-b {
+  from { transform: translate3d(0, 0, 0) scale(1.05); }
+  to { transform: translate3d(-12vmax, -8vmax, 0) scale(0.95); }
+}
+@keyframes drift-c {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(-10vmax, 12vmax, 0); }
+}
+@keyframes grid-drift {
+  from { transform: translate3d(0, 0, 0); }
+  to { transform: translate3d(var(--cell), var(--cell), 0); }
+}
+
+/* Code rain (components/background/MatrixRain.tsx): a transparent canvas, so the
+   light fields above and below it still show through. The mask calms the middle
+   of the page, where the reading column is, and keeps the edges at full strength.
+   Under reduced motion the component draws one static frame instead of animating. */
+.atmos-rain {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0.7;
+  -webkit-mask-image: radial-gradient(ellipse 70% 80% at 50% 45%, rgb(0 0 0 / 0.42) 0%, #000 100%);
+  mask-image: radial-gradient(ellipse 70% 80% at 50% 45%, rgb(0 0 0 / 0.42) 0%, #000 100%);
+}
+
+/* Moonlight rays: a wide conic beam that turns once every ~3 minutes. */
+.atmos-rays {
+  position: absolute;
+  left: 50%;
+  top: 16%;
+  width: 120vmax;
+  height: 120vmax;
+  margin: -60vmax 0 0 -60vmax;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg,
+    rgb(145 202 255 / 0.075) 13deg,
+    transparent 30deg,
+    transparent 148deg,
+    rgb(145 202 255 / 0.05) 166deg,
+    transparent 188deg,
+    transparent 258deg,
+    rgb(214 64 80 / 0.04) 274deg,
+    transparent 294deg
+  );
+  /* The first stop hides the apex where the beams converge, which otherwise
+     reads as a lens-flare artefact. */
+  -webkit-mask-image: radial-gradient(closest-side, transparent 0%, #000 14%, transparent 72%);
+  mask-image: radial-gradient(closest-side, transparent 0%, #000 14%, transparent 72%);
+  animation: rays-turn 180s linear infinite;
+  will-change: transform;
+}
+@keyframes rays-turn {
+  to { transform: rotate(360deg); }
+}
+
+/* Slashes: thin diagonal lines. The outer element is moved by scroll (GSAP,
+   [data-drift]); the inner <i> carries the skew and the breathing animation,
+   so the two transforms never fight. */
+.atmos-slash {
+  position: absolute;
+  top: -30vh;
+  height: 160vh;
+  will-change: transform;
+  transition: opacity 1400ms var(--ease-in-out);
+}
+.atmos-slash > i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  transform: skewX(-20deg);
+  animation: slash-breathe 12s ease-in-out infinite alternate;
+}
+.atmos-slash-1 {
+  left: 16%;
+  width: 2px;
+}
+.atmos-slash-1 > i {
+  background: linear-gradient(180deg, transparent, rgb(214 64 80 / 0.6) 32%, rgb(214 64 80 / 0.6) 68%, transparent);
+}
+.atmos-slash-2 {
+  right: 8%;
+  width: 13vw;
+}
+.atmos-slash-2 > i {
+  background: linear-gradient(180deg, transparent, rgb(214 64 80 / 0.07) 30%, rgb(214 64 80 / 0.07) 70%, transparent);
+  animation-duration: 16s;
+}
+.atmos-slash-3 {
+  left: 63%;
+  width: 1px;
+}
+.atmos-slash-3 > i {
+  background: linear-gradient(180deg, transparent, rgb(145 202 255 / 0.5) 30%, rgb(145 202 255 / 0.5) 70%, transparent);
+  animation-duration: 9s;
+}
+:root[data-atmos="crimson"] .atmos-slash-1,
+:root[data-atmos="crimson"] .atmos-slash-2 {
+  opacity: 1;
+}
+:root:not([data-atmos="crimson"]) .atmos-slash-1,
+:root:not([data-atmos="crimson"]) .atmos-slash-2 {
+  opacity: 0.6;
+}
+@keyframes slash-breathe {
+  from { opacity: 0.3; }
+  to { opacity: 1; }
+}
+
+/* Keep the always-on layers light on small screens */
+@media (max-width: 767px) {
+  .atmos-c { display: none; }
+  .atmos-rays { display: none; }
+  .atmos-grid { --cell: 5rem; animation-duration: 120s; }
+  .atmos-slash-2 { display: none; }
+}
+
+/* ==========================================================================
+   Intro (opening sequence)
+   ========================================================================== */
+.intro {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  place-items: center;
+  background: var(--bg);
+  pointer-events: none;
+  overflow: hidden;
+}
+.js:not(.intro-seen) .intro {
+  display: grid;
+}
+.intro-line {
+  display: block;
+  width: min(60vw, 26rem);
+  height: 1px;
+  background: var(--sky);
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+.intro-mark {
+  display: flex;
+  overflow: hidden;
+  padding-bottom: 0.12em;
+  margin-top: 1rem;
+  font-family: var(--font-display);
+  font-size: clamp(3rem, 10vw, 5.5rem);
+  line-height: 1;
+  letter-spacing: 0.04em;
+}
+.intro-mark > span {
+  display: inline-block;
+  transform: translateY(112%);
+}
+.intro-slash {
+  position: absolute;
+  top: -10%;
+  bottom: -10%;
+  left: 0;
+  width: 14vw;
+  background: var(--crimson);
+  transform: translateX(-140%) skewX(-20deg);
+}
+
+/* ==========================================================================
+   Hero
+   ========================================================================== */
+.hero {
+  position: relative;
+  isolation: isolate;
+  min-height: 100svh;
+  overflow: hidden;
+}
+.hero-grid {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    linear-gradient(to right, rgb(145 202 255 / 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(145 202 255 / 0.07) 1px, transparent 1px);
+  background-size: 6rem 6rem;
+  -webkit-mask-image: radial-gradient(ellipse at 20% 80%, #000 0%, transparent 70%);
+  mask-image: radial-gradient(ellipse at 20% 80%, #000 0%, transparent 70%);
+}
+.hero-art {
+  pointer-events: none;
+}
+[data-depth] {
+  transform: translate3d(calc(var(--px, 0) * var(--depth, 0) * 1px), calc(var(--py, 0) * var(--depth, 0) * 1px), 0);
+  transition: transform 700ms var(--ease-out);
+}
+.orbit-spin {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: orbit-spin 70s linear infinite;
+}
+.orbit-spin-rev {
+  animation-direction: reverse;
+  animation-duration: 110s;
+}
+@keyframes orbit-spin {
+  to { transform: rotate(360deg); }
+}
+
+.hero-bar {
+  display: block;
+  height: 0.5rem;
+  width: 42%;
+  margin-top: 0.4rem;
+  background: var(--crimson);
+  transform: skewX(-30deg);
+  transform-origin: left center;
+}
+
+.scroll-cue {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.9rem;
+}
+.scroll-cue-line {
+  position: relative;
+  display: block;
+  width: 1px;
+  height: 3.2rem;
+  background: var(--line-strong);
+  overflow: hidden;
+}
+.scroll-cue-line::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 1px;
+  height: 40%;
+  background: var(--sky);
+  animation: scroll-dot 2.4s var(--ease-in-out) infinite;
+}
+@keyframes scroll-dot {
+  from { transform: translateY(-100%); }
+  to { transform: translateY(260%); }
+}
+
+/* Hero streaks: thin diagonal lights crossing the frame on staggered loops.
+   Both axes use vw so the travel angle matches the 24deg rotation at any
+   aspect ratio (tan 24deg ≈ 0.445). */
+.hero-streaks {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+  pointer-events: none;
+}
+.hero-streak {
+  position: absolute;
+  left: 0;
+  top: var(--top);
+  width: var(--len);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgb(145 202 255 / 0.9), transparent);
+  opacity: 0;
+  transform: translate3d(-45vw, -10vw, 0) rotate(24deg);
+  animation: streak var(--dur) cubic-bezier(0.4, 0, 0.2, 1) infinite;
+  animation-delay: var(--dly);
+  will-change: transform, opacity;
+}
+.hero-streak[data-tone="crimson"] {
+  height: 2px;
+  background: linear-gradient(90deg, transparent, rgb(214 64 80 / 0.95), transparent);
+}
+@keyframes streak {
+  0% { transform: translate3d(-45vw, -10vw, 0) rotate(24deg); opacity: 0; }
+  3% { opacity: 0.85; }
+  20% { opacity: 0.85; }
+  26%, 100% { transform: translate3d(115vw, 61vw, 0) rotate(24deg); opacity: 0; }
+}
+
+/* ==========================================================================
+   Projects
+   ========================================================================== */
+.spot {
+  position: relative;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.spot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(22rem circle at var(--mx, 50%) var(--my, 50%), rgb(145 202 255 / 0.16), transparent 60%);
+  opacity: 0;
+  transition: opacity var(--dur-std) var(--ease-out);
+}
+.project-panel:hover .spot::after {
+  opacity: 1;
+}
+.parallax-img {
+  position: absolute;
+  inset: -8% 0;
+}
+.project-visual {
+  transition: transform 900ms var(--ease-out);
+}
+.project-panel:hover .project-visual,
+.project-panel:focus-within .project-visual {
+  transform: scale(1.04);
+}
+
+/* Whole card is one link; inner links sit above it. */
+.stretched::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+.above-stretched {
+  position: relative;
+  z-index: 2;
+}
+
+.filter-swap {
+  animation: swap-in 500ms var(--ease-out) both;
+}
+@keyframes swap-in {
+  from { opacity: 0; transform: translate3d(0, 14px, 0); }
+  to { opacity: 1; transform: none; }
+}
+
+.row-link {
+  transition: background-color var(--dur-std) var(--ease-out), padding var(--dur-std) var(--ease-out);
+}
+.row-link:hover {
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+}
+
+/* ==========================================================================
+   About: three-circle diagram
+   ========================================================================== */
+.venn-c {
+  fill: none;
+  stroke-width: 1.25;
+}
+.js [data-reveal].venn .venn-c {
+  stroke-dasharray: 620;
+  stroke-dashoffset: 620;
+  transition: stroke-dashoffset 1600ms var(--ease-in-out);
+}
+.js [data-reveal].venn.is-in .venn-c {
+  stroke-dashoffset: 0;
+}
+.js [data-reveal].venn .venn-c:nth-of-type(2) { transition-delay: 160ms; }
+.js [data-reveal].venn .venn-c:nth-of-type(3) { transition-delay: 320ms; }
+.reveal-all .venn .venn-c {
+  stroke-dashoffset: 0 !important;
+}
+
+/* ==========================================================================
+   Experience timeline
+   ========================================================================== */
+.timeline-rail {
+  position: absolute;
+  left: 0.5rem;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--line);
+}
+.timeline-progress {
+  position: absolute;
+  left: 0.5rem;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: linear-gradient(180deg, var(--sky), var(--crimson));
+  transform-origin: top center;
+}
+.js .timeline-progress {
+  transform: scaleY(0);
+}
+.reveal-all .timeline-progress {
+  transform: none !important;
+}
+.timeline-dot {
+  position: absolute;
+  left: 0.5rem;
+  top: 0.55rem;
+  width: 0.7rem;
+  height: 0.7rem;
+  background: var(--bg);
+  border: 1px solid var(--sky);
+  transform: translateX(-50%) rotate(45deg);
+}
+.timeline-dot[data-current="true"] {
+  background: var(--crimson);
+  border-color: var(--crimson);
+}
+
+/* ==========================================================================
+   Contact
+   ========================================================================== */
+.channel {
+  display: grid;
+  grid-template-columns: 6.5rem 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 0;
+  border-top: 1px solid var(--line);
+  color: var(--ink);
+  text-decoration: none;
+  transition: padding var(--dur-std) var(--ease-out), color var(--dur-micro);
+}
+a.channel:hover,
+a.channel:focus-visible {
+  padding-left: 0.75rem;
+  color: var(--sky);
+}
+.channel-unset {
+  color: var(--ink-2);
+}
+.slash-wipe {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 16vw;
+  background: var(--crimson);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-160%) skewX(-20deg);
+}
+.js .slash-wipe.is-in {
+  animation: slash-wipe 1100ms var(--ease-in-out) both;
+}
+@keyframes slash-wipe {
+  0% { opacity: 0.9; transform: translateX(-160%) skewX(-20deg); }
+  100% { opacity: 0; transform: translateX(760%) skewX(-20deg); }
+}
+
+/* ==========================================================================
+   Navbar
+   ========================================================================== */
+.nav-shell {
+  background: color-mix(in srgb, var(--bg) 60%, transparent);
+  border: 1px solid var(--line);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  transition: background-color var(--dur-std) var(--ease-out), border-color var(--dur-std) var(--ease-out);
+}
+.nav-shell[data-scrolled="true"] {
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  border-color: var(--line-strong);
+}
+.nav-indicator {
+  position: absolute;
+  left: 0;
+  bottom: 2px;
+  height: 2px;
+  width: var(--ind-w, 0);
+  background: var(--crimson);
+  transform: translateX(var(--ind-x, 0)) skewX(-30deg);
+  opacity: 0;
+  transition: transform var(--dur-std) var(--ease-out), width var(--dur-std) var(--ease-out), opacity var(--dur-micro);
+}
+.nav-indicator[data-visible="true"] {
+  opacity: 1;
+}
+
+/* ==========================================================================
+   Section backdrops (components/background/SectionBackdrop.tsx)
+   .backdrop spans the section and fades at both ends; .backdrop-stick is
+   viewport-tall and sticky inside it, so the motif stays in view while the
+   content scrolls past. overflow: clip (not hidden) keeps sticky working.
+   Sits at z-index -1, above the section's own slanted panel (::before).
+   ========================================================================== */
+.backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: clip;
+  pointer-events: none;
+  -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 7rem, #000 calc(100% - 7rem), transparent 100%);
+  mask-image: linear-gradient(180deg, transparent 0, #000 7rem, #000 calc(100% - 7rem), transparent 100%);
+}
+.backdrop-stick {
+  position: sticky;
+  top: 0;
+  height: 100svh;
+  overflow: hidden;
+}
+
+/* Market (Projects): a price line draws itself, candles breathe */
+.market {
+  position: absolute;
+  left: 0;
+  bottom: 3vh;
+  width: 100%;
+  height: 62vh;
+  opacity: 0.85;
+}
+.market-grid line {
+  stroke: rgb(145 202 255 / 0.07);
+  stroke-width: 1;
+}
+.market-candle line {
+  stroke: rgb(145 202 255 / 0.28);
+  stroke-width: 1.5;
+}
+.market-candle rect {
+  fill: rgb(145 202 255 / 0.1);
+  stroke: rgb(145 202 255 / 0.32);
+  stroke-width: 1;
+}
+.market-candle[data-falling] line {
+  stroke: rgb(214 64 80 / 0.4);
+}
+.market-candle[data-falling] rect {
+  fill: rgb(214 64 80 / 0.12);
+  stroke: rgb(214 64 80 / 0.45);
+}
+.market-candle {
+  transform-box: fill-box;
+  transform-origin: 50% 100%;
+  animation: candle-tick 7s ease-in-out infinite alternate;
+  animation-delay: calc(var(--i) * -0.7s);
+}
+@keyframes candle-tick {
+  from { transform: scaleY(0.8); }
+  to { transform: scaleY(1); }
+}
+.market-line {
+  fill: none;
+  stroke: rgb(145 202 255 / 0.7);
+  stroke-width: 1.75;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: market-draw 22s var(--ease-in-out) infinite;
+}
+.market-tip {
+  fill: var(--crimson);
+  opacity: 0;
+  animation: market-tip 22s linear infinite;
+}
+@keyframes market-draw {
+  0% { stroke-dashoffset: 1; opacity: 0; }
+  6% { opacity: 1; }
+  62% { stroke-dashoffset: 0; opacity: 1; }
+  88% { stroke-dashoffset: 0; opacity: 1; }
+  100% { stroke-dashoffset: 0; opacity: 0; }
+}
+@keyframes market-tip {
+  0%, 60% { opacity: 0; }
+  66%, 88% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+/* Sonar (About): rings radiating from behind the intersection diagram */
+.sonar {
+  position: absolute;
+  left: 50%;
+  top: 34%;
+  width: 0;
+  height: 0;
+}
+.sonar > i {
+  position: absolute;
+  left: -36vmin;
+  top: -36vmin;
+  width: 72vmin;
+  height: 72vmin;
+  border-radius: 50%;
+  border: 1px solid rgb(145 202 255 / 0.4);
+  opacity: 0;
+  transform: scale(0.12);
+  animation: sonar 14s cubic-bezier(0.2, 0.6, 0.3, 1) infinite;
+  animation-delay: calc(var(--i) * 3.5s);
+  will-change: transform, opacity;
+}
+.sonar > i[data-tone="crimson"] {
+  border-color: rgb(214 64 80 / 0.45);
+}
+@keyframes sonar {
+  0% { transform: scale(0.12); opacity: 0; }
+  8% { opacity: 0.7; }
+  100% { transform: scale(1); opacity: 0; }
+}
+/* From lg up the diagram sits in the left column: centre the rings on it.
+   .wrap is max 90rem, centred, with --gutter padding; the diagram is
+   max-w-md (28rem), so its centre is gutter + 14rem from the wrap's left edge. */
+@media (min-width: 1024px) {
+  .sonar {
+    left: calc(50% - min(50vw, 45rem) + var(--gutter) + 14rem);
+    top: 58%;
+  }
+}
+
+/* Clock (Experience): a slowly turning tick ring, a radar sweep, one fixed
+   crimson marker at twelve o'clock. */
+.clock {
+  position: absolute;
+  right: -34vmin;
+  top: 50%;
+  width: min(92vmin, 60rem);
+  aspect-ratio: 1;
+  transform: translateY(-50%);
+  opacity: 0.7;
+}
+.clock svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+}
+.clock-ticks {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: orbit-spin 300s linear infinite;
+}
+.clock-ticks line {
+  stroke: rgb(145 202 255 / 0.3);
+  stroke-width: 1.5;
+}
+.clock-ticks line[data-major] {
+  stroke: rgb(145 202 255 / 0.6);
+  stroke-width: 2.5;
+}
+.clock-dials {
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: orbit-spin 200s linear infinite reverse;
+}
+.clock-dash {
+  fill: none;
+  stroke: rgb(145 202 255 / 0.3);
+  stroke-width: 1;
+  stroke-dasharray: 2 12;
+}
+.clock-thin {
+  fill: none;
+  stroke: rgb(145 202 255 / 0.12);
+  stroke-width: 1;
+}
+.clock-marker {
+  fill: var(--crimson);
+}
+.clock-sweep {
+  position: absolute;
+  inset: 4%;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0 74%, rgb(145 202 255 / 0.2) 100%);
+  -webkit-mask-image: radial-gradient(closest-side, transparent 60%, #000 61%, #000 100%);
+  mask-image: radial-gradient(closest-side, transparent 60%, #000 61%, #000 100%);
+  animation: orbit-spin 26s linear infinite;
+  will-change: transform;
+}
+@media (max-width: 767px) {
+  .clock {
+    right: -52vw;
+    width: 118vw;
+    opacity: 0.5;
+  }
+}
+
+/* ==========================================================================
+   Reduced motion: keep hierarchy and function, drop movement
+   ========================================================================== */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    transition-delay: 0ms !important;
+  }
+  [data-depth] {
+    transform: none;
+  }
+
+  /* Background layers: continuous motion is removed. Elements that only make
+     sense in motion are hidden; the rest settle into a complete static state
+     (price line fully drawn, tick ring at rest, rain as one still frame) so every section
+     keeps its identity. */
+  .hero-streaks,
+  .sonar,
+  .clock-sweep {
+    display: none;
+  }
+  .atmos-rays,
+  .atmos-slash > i,
+  .clock-ticks,
+  .clock-dials,
+  .market-candle {
+    animation: none !important;
+  }
+  .market-line {
+    animation: none !important;
+    stroke-dashoffset: 0;
+    opacity: 1;
+  }
+  .market-tip {
+    animation: none !important;
+    opacity: 1;
+  }
+}
+}
